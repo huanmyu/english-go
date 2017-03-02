@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"git.oschina.net/bwn/english/chat"
 	"git.oschina.net/bwn/english/model"
 )
 
@@ -48,11 +49,11 @@ func AddWordHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	word := model.Word{
-		Name:        "tackle",
-		Phonogram:   "[ˈtækəl] ",
-		Audio:       "",
-		Explanation: "n.用具，装备； 索具； 阻挡； 阻截队员 \nvt.着手处理； [橄榄球]擒住并摔倒（一名对方球员）； 给（马）配上挽具； \nvi.擒住并摔倒一名对手；",
-		Example:     "Design patterns are solutions to recurring problems; guidelines on how to tackle certain problems.",
+		Name:        "peer",
+		Phonogram:   "[pɪr]",
+		Audio:       "https://tts.hjapi.com/en-us/9DF3BF531D7AD6B2",
+		Explanation: "n. 同等的人；同辈，同事 \nv. 凝视，盯着看",
+		Example:     "The WebSocket protocol defines three types of control messages: close, ping and pong. Call the connection WriteControl, WriteMessage or NextWriter methods to send a control message to the peer.",
 		CreatedAt:   insertTime,
 		UpdatedAt:   insertTime,
 	}
@@ -72,13 +73,32 @@ func EditWordHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "ID = %d, affected = %d\n", word.ID, rowCnt)
 }
 
+func chatHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL)
+	if r.URL.Path != "/chat" {
+		http.Error(w, "Not found", 404)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+	http.ServeFile(w, r, "static/chat.html")
+}
+
 func main() {
+	hub := chat.NewHub()
+	go hub.Run()
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	r.HandleFunc("/words", WordsHandler)
 	r.HandleFunc("/words/add", AddWordHandler)
 	r.HandleFunc("/words/edit", EditWordHandler)
 	r.HandleFunc("/words/{id:[0-9]+}", WordHandler)
+	r.HandleFunc("/chat", chatHandler)
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		chat.ServeWs(hub, w, r)
+	})
 
 	srv := &http.Server{
 		Handler:      r,

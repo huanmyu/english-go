@@ -28,4 +28,13 @@ VALUES ("slogan","[ˈsloʊgən]","","n.标语，口号； 呐喊声； （商业
 4. 安装和使用[Go Mysql Driver](http://go-database-sql.org/index.html)
 `go get github.com/go-sql-driver/mysql`
 
+>Http FrameWork相关  
+
+1. 安装和使用[mux router](http://www.gorillatoolkit.org/pkg/mux)
+`go get github.com/gorilla/mux`
+
+2. 安装和使用[websocket](https://godoc.org/github.com/gorilla/websocket)
+`go get github.com/gorilla/websocket`
+
+
 [sql语句文档](https://www.w3schools.com/sql/default.asp)
