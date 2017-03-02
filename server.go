@@ -3,7 +3,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -19,7 +18,56 @@ const timeLayout = "2006-01-02 15:04:05"
 
 func WordsHandler(w http.ResponseWriter, r *http.Request) {
 	var word model.Word
-	words, err := word.GetWordList(1, 5)
+	//	urlValues := r.URL.Query()
+	//	pageNumberSlice := urlValues["pageNumber"]
+	//	pageSizeSlice := urlValues["pageSize"]
+	//	if len(pageNumberSlice) != 1 || len(pageSizeSlice) != 1 {
+	//		respondWithError(w, http.StatusBadRequest, "Invalid pageNumber or pageSize")
+	//		return
+	//	}
+
+	//	pageNumber, err := strconv.ParseInt(pageNumberSlice[0], 10, 64)
+	//	if err != nil {
+	//		respondWithError(w, http.StatusInternalServerError, err.Error())
+	//		return
+	//	}
+
+	//	pageSize, err := strconv.ParseInt(pageSizeSlice[0], 10, 64)
+	//	if err != nil {
+	//		respondWithError(w, http.StatusInternalServerError, err.Error())
+	//		return
+	//	}
+
+	// use request method
+	err := r.ParseForm()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pageNumberValue := r.FormValue("pageNumber")
+	pageSizeValue := r.FormValue("pageSize")
+	if pageNumberValue == "" {
+		pageNumberValue = "1"
+	}
+
+	if pageSizeValue == "" {
+		pageSizeValue = "20"
+	}
+
+	pageNumber, err := strconv.ParseInt(pageNumberValue, 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pageSize, err := strconv.ParseInt(pageSizeValue, 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	words, err := word.GetWordList(pageNumber, pageSize)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -36,7 +84,7 @@ func WordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	word := model.Word{ID: id}
-	err = word.GetWordById(id)
+	err = word.GetWordByID()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -44,8 +92,9 @@ func WordHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, word)
 }
 
-func AddWordHandler(w http.ResponseWriter, r *http.Request) {
-	var word Word
+func CreateWordHandler(w http.ResponseWriter, r *http.Request) {
+	var word model.Word
+
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&word); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -53,24 +102,15 @@ func AddWordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	insertTime, err := time.Parse(timeLayout, "2017-03-01 13:00:00")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// word := model.Word{
-	// 	Name:        "peer",
-	// 	Phonogram:   "[pɪr]",
-	// 	Audio:       "https://tts.hjapi.com/en-us/9DF3BF531D7AD6B2",
-	// 	Explanation: "n. 同等的人；同辈，同事 \nv. 凝视，盯着看",
-	// 	Example:     "The WebSocket protocol defines three types of control messages: close, ping and pong. Call the connection WriteControl, WriteMessage or NextWriter methods to send a control message to the peer.",
-	// 	CreatedAt:   insertTime,
-	// 	UpdatedAt:   insertTime,
-	// }
-	err = word.CreateWord()
+	word.CreatedAt = time.Now()
+	word.UpdatedAt = time.Now()
+	lastInsertId, err := word.CreateWord()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	word.ID = lastInsertId
 	respondWithIndentJSON(w, http.StatusCreated, word)
 }
 
@@ -82,21 +122,24 @@ func EditWordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var word Word
+	var word, viewWord model.Word
 	decoder := json.NewDecoder(r.Body)
-	if err = decoder.Decode(&w1); err != nil {
+	if err = decoder.Decode(&word); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	defer r.Body.Close()
+
+	viewWord = model.Word{ID: id}
+	err = viewWord.GetWordByID()
+	if err != nil {
+		return
+	}
+
+	word.CreatedAt = viewWord.CreatedAt
+	word.UpdatedAt = time.Now()
+
 	word.ID = id
-	// word := model.Word{
-	// 	ID:          3,
-	// 	Name:        "wobble",
-	// 	Phonogram:   "[ˈwɑbl]",
-	// 	Explanation: "vt.& vi.<使>晃动； <使>摇摆不定； 颤动；\nn.摇动，晃动； 不稳定；",
-	// 	Example:     "A topic that can easily make anyone's mind wobble.",
-	// }
 	err = word.UpdateWord()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -112,6 +155,14 @@ func DeleteWordHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid word ID")
 		return
 	}
+
+	word := model.Word{ID: id}
+	err = word.DeleteWord()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithIndentJSON(w, http.StatusOK, map[string]string{"code": "200", "result": "success"})
 }
 
 func chatHandler(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +211,7 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	r.HandleFunc("/words", WordsHandler)
 	r.HandleFunc("/word/{id:[0-9]+}", WordHandler).Methods("GET")
-	r.HandleFunc("/word", AddWordHandler).Methods("POST")
+	r.HandleFunc("/word", CreateWordHandler).Methods("POST")
 	r.HandleFunc("/word/{id:[0-9]+}", EditWordHandler).Methods("PUT")
 	r.HandleFunc("/word/{id:[0-9]+}", DeleteWordHandler).Methods("DELETE")
 	r.HandleFunc("/chat", chatHandler)

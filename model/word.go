@@ -8,7 +8,7 @@ import (
 
 // Word word model
 type Word struct {
-	ID          int       `json:"id"`
+	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Phonogram   string    `json:"phonogram"`
 	Audio       string    `json:"audio"`
@@ -16,34 +16,6 @@ type Word struct {
 	Example     string    `json:"example"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-// GetWordByID find word by ID
-func (w *Word) GetWordByID(id int64) error {
-	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT * FROM word WHERE id=?", id)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		if err = rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
-			return err
-		}
-
-		if createdAt.Valid {
-			w.CreatedAt = createdAt.Time
-		}
-
-		if updatedAt.Valid {
-			w.UpdatedAt = updatedAt.Time
-		}
-	}
-	if err = rows.Err(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // GetWordList find page word
@@ -95,8 +67,36 @@ func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error) 
 	return
 }
 
+// GetWordByID find word by ID
+func (w *Word) GetWordByID() error {
+	var createdAt, updatedAt mysql.NullTime
+	rows, err := db.Query("SELECT * FROM word WHERE id=?", w.ID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err = rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
+			return err
+		}
+
+		if createdAt.Valid {
+			w.CreatedAt = createdAt.Time
+		}
+
+		if updatedAt.Valid {
+			w.UpdatedAt = updatedAt.Time
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // CreateWord create word
-func (w Word) CreateWord() (err error) {
+func (w Word) CreateWord() (lastInsertId int64, err error) {
 	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, createdAt, updatedAt) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
 		return
@@ -107,7 +107,7 @@ func (w Word) CreateWord() (err error) {
 		return
 	}
 
-	_, err = res.LastInsertId()
+	lastInsertId, err = res.LastInsertId()
 	if err != nil {
 		return
 	}
@@ -122,14 +122,14 @@ func (w Word) UpdateWord() (err error) {
 	if err != nil {
 		return
 	}
-
 	defer tx.Rollback()
+
 	stmt, err := tx.Prepare("UPDATE word SET name = ?, phonogram = ?, explanation = ?, example = ?, updatedAt = ? WHERE id = ?")
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.Exec(w.Name, w.Phonogram, w.Explanation, w.Example, time.Now().Format(timeLayout), w.ID)
+	res, err := stmt.Exec(w.Name, w.Phonogram, w.Explanation, w.Example, w.UpdatedAt.Format(timeLayout), w.ID)
 	if err != nil {
 		return
 	}
@@ -144,19 +144,14 @@ func (w Word) UpdateWord() (err error) {
 	return
 }
 
-// CreateWord create word
-func (w Word) CreateWord() (err error) {
-	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, createdAt, updatedAt) VALUES(?,?,?,?,?,?,?)")
+// DeleteWord delete word
+func (w Word) DeleteWord() (err error) {
+	stmt, err := db.Prepare("DELETE FROM word where id = ?")
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.Exec(w.Name, w.Phonogram, w.Audio, w.Explanation, w.Example, w.CreatedAt.Format(timeLayout), w.UpdatedAt.Format(timeLayout))
-	if err != nil {
-		return
-	}
-
-	_, err = res.LastInsertId()
+	res, err := stmt.Exec(w.ID)
 	if err != nil {
 		return
 	}
