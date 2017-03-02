@@ -1,13 +1,12 @@
 package model
 
 import (
-	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
 )
 
+// Word word model
 type Word struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
@@ -19,16 +18,17 @@ type Word struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func (w Word) GetWordById(id int64) Word {
+// GetWordByID find word by ID
+func (w *Word) GetWordByID(id int64) error {
 	var createdAt, updatedAt mysql.NullTime
 	rows, err := db.Query("SELECT * FROM word WHERE id=?", id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		if err := rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
-			log.Fatal(err)
+		if err = rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
+			return err
 		}
 
 		if createdAt.Valid {
@@ -39,26 +39,23 @@ func (w Word) GetWordById(id int64) Word {
 			w.UpdatedAt = updatedAt.Time
 		}
 	}
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+	if err = rows.Err(); err != nil {
+		return err
 	}
 
-	if createdAt.Valid {
-		w.CreatedAt = createdAt.Time
-	}
-	return w
+	return nil
 }
 
-func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word) {
+// GetWordList find page word
+func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error) {
 	var total, offset int64
-	err := db.QueryRow("SELECT count(*) as total FROM word").Scan(&total)
+	err = db.QueryRow("SELECT count(*) as total FROM word").Scan(&total)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-
 	pages := total / pageSize
 	if total > pages*pageSize {
-		pages += 1
+		pages++
 	}
 
 	if pageNumber > pages {
@@ -74,13 +71,13 @@ func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word) {
 	var createdAt, updatedAt mysql.NullTime
 	rows, err := db.Query("SELECT * FROM word limit ?,?", offset, pageSize)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		if err := rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
-			log.Fatal(err)
+		if err = rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
+			return
 		}
 
 		if createdAt.Valid {
@@ -90,58 +87,80 @@ func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word) {
 		if updatedAt.Valid {
 			w.UpdatedAt = updatedAt.Time
 		}
-		fmt.Println(w.Name)
+
 		words = append(words, w)
 	}
 
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
-	}
+	err = rows.Err()
 	return
 }
 
-func (w Word) CreateWord() (lastID, rowCnt int64) {
+// CreateWord create word
+func (w Word) CreateWord() (err error) {
 	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, createdAt, updatedAt) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
+
 	res, err := stmt.Exec(w.Name, w.Phonogram, w.Audio, w.Explanation, w.Example, w.CreatedAt.Format(timeLayout), w.UpdatedAt.Format(timeLayout))
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-	lastID, err = res.LastInsertId()
+
+	_, err = res.LastInsertId()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-	rowCnt, err = res.RowsAffected()
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	_, err = res.RowsAffected()
 	return
 }
 
-func (w Word) UpdateWord() (rowCnt int64) {
+// UpdateWord update word
+func (w Word) UpdateWord() (err error) {
 	tx, err := db.Begin()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
+
 	defer tx.Rollback()
 	stmt, err := tx.Prepare("UPDATE word SET name = ?, phonogram = ?, explanation = ?, example = ?, updatedAt = ? WHERE id = ?")
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
+
 	res, err := stmt.Exec(w.Name, w.Phonogram, w.Explanation, w.Example, time.Now().Format(timeLayout), w.ID)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	defer stmt.Close() // danger!
-	rowCnt, err = res.RowsAffected()
+
+	_, err = res.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
+
 	err = tx.Commit()
+	return
+}
+
+// CreateWord create word
+func (w Word) CreateWord() (err error) {
+	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, createdAt, updatedAt) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
+
+	res, err := stmt.Exec(w.Name, w.Phonogram, w.Audio, w.Explanation, w.Example, w.CreatedAt.Format(timeLayout), w.UpdatedAt.Format(timeLayout))
+	if err != nil {
+		return
+	}
+
+	_, err = res.LastInsertId()
+	if err != nil {
+		return
+	}
+
+	_, err = res.RowsAffected()
 	return
 }
