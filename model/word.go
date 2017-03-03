@@ -19,8 +19,9 @@ type Word struct {
 }
 
 // GetWordList find page word
-func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error) {
+func (w *Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error) {
 	var total, offset int64
+	var word Word
 	err = db.QueryRow("SELECT count(*) as total FROM word").Scan(&total)
 	if err != nil {
 		return
@@ -48,19 +49,19 @@ func (w Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error) 
 	defer rows.Close()
 
 	for rows.Next() {
-		if err = rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
+		if err = rows.Scan(&word.ID, &word.Name, &word.Phonogram, &word.Audio, &word.Explanation, &word.Example, &createdAt, &updatedAt); err != nil {
 			return
 		}
 
 		if createdAt.Valid {
-			w.CreatedAt = createdAt.Time
+			word.CreatedAt = createdAt.Time
 		}
 
 		if updatedAt.Valid {
-			w.UpdatedAt = updatedAt.Time
+			word.UpdatedAt = updatedAt.Time
 		}
 
-		words = append(words, w)
+		words = append(words, word)
 	}
 
 	err = rows.Err()
@@ -96,7 +97,7 @@ func (w *Word) GetWordByID() error {
 }
 
 // CreateWord create word
-func (w Word) CreateWord() (lastInsertId int64, err error) {
+func (w *Word) CreateWord() (lastInsertId int64, err error) {
 	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, createdAt, updatedAt) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
 		return
@@ -117,7 +118,7 @@ func (w Word) CreateWord() (lastInsertId int64, err error) {
 }
 
 // UpdateWord update word
-func (w Word) UpdateWord() (err error) {
+func (w *Word) UpdateWord() (err error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return
@@ -145,7 +146,7 @@ func (w Word) UpdateWord() (err error) {
 }
 
 // DeleteWord delete word
-func (w Word) DeleteWord() (err error) {
+func (w *Word) DeleteWord() (err error) {
 	stmt, err := db.Prepare("DELETE FROM word where id = ?")
 	if err != nil {
 		return
