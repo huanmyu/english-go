@@ -26,6 +26,7 @@ func (w *Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error)
 	if err != nil {
 		return
 	}
+
 	pages := total / pageSize
 	if total > pages*pageSize {
 		pages++
@@ -76,6 +77,7 @@ func (w *Word) GetWordByID() error {
 		return err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		if err = rows.Scan(&w.ID, &w.Name, &w.Phonogram, &w.Audio, &w.Explanation, &w.Example, &createdAt, &updatedAt); err != nil {
 			return err
@@ -89,16 +91,16 @@ func (w *Word) GetWordByID() error {
 			w.UpdatedAt = updatedAt.Time
 		}
 	}
+
 	if err = rows.Err(); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 // CreateWord create word
-func (w *Word) CreateWord() (lastInsertId int64, err error) {
-	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, createdAt, updatedAt) VALUES(?,?,?,?,?,?,?)")
+func (w *Word) CreateWord() (lastInsertID int64, err error) {
+	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, created_at, updated_at) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
 		return
 	}
@@ -107,8 +109,9 @@ func (w *Word) CreateWord() (lastInsertId int64, err error) {
 	if err != nil {
 		return
 	}
+	defer stmt.Close() // danger!
 
-	lastInsertId, err = res.LastInsertId()
+	lastInsertID, err = res.LastInsertId()
 	if err != nil {
 		return
 	}
@@ -125,7 +128,7 @@ func (w *Word) UpdateWord() (err error) {
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare("UPDATE word SET name = ?, phonogram = ?, explanation = ?, example = ?, updatedAt = ? WHERE id = ?")
+	stmt, err := tx.Prepare("UPDATE word SET name = ?, phonogram = ?, explanation = ?, example = ?, updated_at = ? WHERE id = ?")
 	if err != nil {
 		return
 	}
