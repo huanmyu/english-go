@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"git.oschina.net/bwn/english/chat"
@@ -29,6 +30,7 @@ func main() {
 	r.HandleFunc("/", homeHandler)
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
+	r.HandleFunc("/login", controller.LoginHandler).Methods("POST")
 	r.HandleFunc("/user", controller.CreateUserHandler).Methods("POST")
 	r.HandleFunc("/user/{id:[0-9]+}", controller.UserHandler).Methods("GET")
 	r.HandleFunc("/user/{id:[0-9]+}", controller.EditUserHandler).Methods("PUT")
@@ -44,8 +46,12 @@ func main() {
 		chat.ServeWs(hub, w, r)
 	})
 
+	headersCORSOption := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+	originsCORSOption := handlers.AllowedOrigins([]string{"*"})
+	methodsCORSOption := handlers.AllowedMethods([]string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"})
+
 	srv := &http.Server{
-		Handler:      r,
+		Handler:      handlers.CORS(originsCORSOption, headersCORSOption, methodsCORSOption)(r),
 		Addr:         "127.0.0.1:8000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,

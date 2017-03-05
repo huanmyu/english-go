@@ -12,7 +12,7 @@ field: id name password isReme
 (
 id integer primary key not null auto_increment,
 name varchar(255),
-password varchar(30),
+password varchar(50),
 is_remember tinyint(1) DEFAULT 0,
 created_at  timestamp DEFAULT current_timestamp,
 updated_at  timestamp DEFAULT current_timestamp
@@ -53,5 +53,7 @@ TODO use sqlx `go get github.com/jmoiron/sqlx`
 2. 安装和使用[websocket](https://godoc.org/github.com/gorilla/websocket)
 `go get github.com/gorilla/websocket`
 
+3. 安装和使用[handlers]( "http://www.gorillatoolkit.org/pkg/handlers")
+`go get github.com/gorilla/handlers`
 
 [sql语句文档](https://www.w3schools.com/sql/default.asp)

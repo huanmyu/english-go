@@ -11,6 +11,27 @@ import (
 	"git.oschina.net/bwn/english/model"
 )
 
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var user model.User
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&user); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	user.Password = md5Password(user.Password)
+	err := user.GetUserByNameAndPassword()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithIndentJSON(w, http.StatusOK, user)
+
+}
+
 // UserHandler find user by id
 func UserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -40,6 +61,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
+	user.Password = md5Password(user.Password)
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 	lastInsertID, err := user.CreateUser()

@@ -1,9 +1,21 @@
 package controller
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 )
+
+const salt = "word@english"
+
+func md5Password(password string) string {
+	m5 := md5.New()
+	m5.Write([]byte(password))
+	m5.Write([]byte(string(salt)))
+	st := m5.Sum(nil)
+	return hex.EncodeToString(st)
+}
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithIndentJSON(w, code, map[string]string{"error": message})

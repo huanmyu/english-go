@@ -41,14 +41,14 @@ func (u *User) GetUserList(pageNumber, pageSize int64) (users []User, err error)
 	}
 
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT * FROM user limit ?,?", offset, pageSize)
+	rows, err := db.Query("SELECT id, name, password, created_at, updated_at FROM user limit ?,?", offset, pageSize)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		if err = rows.Scan(&user.ID, &user.Name, &user.Password, &user.IsRemember, &createdAt, &updatedAt); err != nil {
+		if err = rows.Scan(&user.ID, &user.Name, &user.Password, &createdAt, &updatedAt); err != nil {
 			return
 		}
 
@@ -70,7 +70,7 @@ func (u *User) GetUserList(pageNumber, pageSize int64) (users []User, err error)
 // GetUserByID find user by ID
 func (u *User) GetUserByID() (err error) {
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT * FROM user WHERE id=?", u.ID)
+	rows, err := db.Query("SELECT id, name, password, is_remember, created_at, updated_at FROM user WHERE id=?", u.ID)
 	if err != nil {
 		return
 	}
@@ -87,6 +87,24 @@ func (u *User) GetUserByID() (err error) {
 
 		if updatedAt.Valid {
 			u.UpdatedAt = updatedAt.Time
+		}
+	}
+
+	err = rows.Err()
+	return
+}
+
+// GetUserByNameAndPassword find user by Name and Password
+func (u *User) GetUserByNameAndPassword() (err error) {
+	rows, err := db.Query("SELECT id, is_remember FROM user WHERE name=? AND password=? ", u.Name, u.Password)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(&u.ID, &u.IsRemember); err != nil {
+			return
 		}
 	}
 
