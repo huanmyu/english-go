@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"git.oschina.net/bwn/english/chat"
-	"git.oschina.net/bwn/english/controller"
+	"github.com/bowenchen6/english/chat"
+	"github.com/bowenchen6/english/controller"
 )
 
 const timeLayout = "2006-01-02 15:04:05"

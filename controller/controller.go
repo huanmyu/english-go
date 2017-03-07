@@ -5,9 +5,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
+
+	"github.com/bowenchen6/english/model"
 )
 
 const salt = "word@english"
+
+func oauth(r *http.Request) (userId string, err error) {
+	userId, err := r.Cookie("Token")
+	var u model.User
+
+}
 
 func md5Password(password string) string {
 	m5 := md5.New()

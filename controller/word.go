@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"git.oschina.net/bwn/english/model"
+	"github.com/bowenchen6/english/model"
 	"github.com/gorilla/mux"
 )
 
@@ -70,6 +70,12 @@ func WordHandler(w http.ResponseWriter, r *http.Request) {
 
 // CreateWordHandler create word
 func CreateWordHandler(w http.ResponseWriter, r *http.Request) {
+	userId, err := oauth(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	var word model.Word
 
 	decoder := json.NewDecoder(r.Body)
@@ -93,6 +99,12 @@ func CreateWordHandler(w http.ResponseWriter, r *http.Request) {
 
 // EditWordHandler edit word
 func EditWordHandler(w http.ResponseWriter, r *http.Request) {
+	userId, err := oauth(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
@@ -128,6 +140,12 @@ func EditWordHandler(w http.ResponseWriter, r *http.Request) {
 
 // DeleteWordHandler delete word
 func DeleteWordHandler(w http.ResponseWriter, r *http.Request) {
+	userId, err := oauth(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
