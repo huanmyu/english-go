@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bowenchen6/english-go/model"
 	"github.com/gorilla/mux"
-
-	"github.com/bowenchen6/english/model"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,17 +35,20 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithIndentJSON(w, http.StatusOK, user)
+}
+
+func IsLoginHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := oauth(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithIndentJSON(w, http.StatusOK, user)
 
 }
 
 // UserHandler find user by id
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-	userId, err := oauth(r)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
@@ -84,17 +86,19 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.ID = lastInsertID
+
+	if cookie, err := r.Cookie("Token"); err != nil {
+		http.SetCookie(w, &http.Cookie{Name: "Token", Value: strconv.FormatInt(user.ID, 10)})
+	} else {
+		cookie.Value = strconv.FormatInt(user.ID, 10)
+		http.SetCookie(w, cookie)
+	}
+
 	respondWithIndentJSON(w, http.StatusCreated, user)
 }
 
 // EditUserHandler edit user
 func EditUserHandler(w http.ResponseWriter, r *http.Request) {
-	userId, err := oauth(r)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {

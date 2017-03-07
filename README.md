@@ -44,7 +44,8 @@ VALUES ("slogan","[ˈsloʊgən]","https://tts.hjapi.com/en-us/5DEDBC879A7FDFF4",
 5. 安装和使用[Go Mysql Driver](http://go-database-sql.org/index.html)
 `go get github.com/go-sql-driver/mysql`
 
-TODO use sqlx `go get github.com/jmoiron/sqlx`
+6. TODO use sqlx 
+`go get github.com/jmoiron/sqlx`
 
 >Http FrameWork相关  
 

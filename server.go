@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bowenchen6/english-go/chat"
+	"github.com/bowenchen6/english-go/controller"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-
-	"github.com/bowenchen6/english/chat"
-	"github.com/bowenchen6/english/controller"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -31,6 +30,7 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	r.HandleFunc("/login", controller.LoginHandler).Methods("POST")
+	r.HandleFunc("/isLogin", controller.IsLoginHandler).Methods("GET")
 	r.HandleFunc("/user", controller.CreateUserHandler).Methods("POST")
 	r.HandleFunc("/user/{id:[0-9]+}", controller.UserHandler).Methods("GET")
 	r.HandleFunc("/user/{id:[0-9]+}", controller.EditUserHandler).Methods("PUT")
@@ -45,7 +45,7 @@ func main() {
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		chat.ServeWs(hub, w, r)
 	})
-
+	controller.GetCookie()
 	headersCORSOption := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 	originsCORSOption := handlers.AllowedOrigins([]string{"*"})
 	methodsCORSOption := handlers.AllowedMethods([]string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"})
