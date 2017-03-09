@@ -10,8 +10,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// WordsHandler find all word by page
-func WordsHandler(w http.ResponseWriter, r *http.Request) {
+type Word struct {
+}
+
+// ListHandler find all word by page
+func WordListHandler(w http.ResponseWriter, r *http.Request) {
 	var word model.Word
 	// use request method
 	err := r.ParseForm()
@@ -50,8 +53,8 @@ func WordsHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, words)
 }
 
-// WordHandler find word by id
-func WordHandler(w http.ResponseWriter, r *http.Request) {
+// ViewHandler find word by id
+func (wd Word) ViewHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
@@ -68,8 +71,8 @@ func WordHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, word)
 }
 
-// CreateWordHandler create word
-func CreateWordHandler(w http.ResponseWriter, r *http.Request) {
+// CreateHandler create word
+func (wd Word) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	var word model.Word
 
 	decoder := json.NewDecoder(r.Body)
@@ -91,8 +94,8 @@ func CreateWordHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusCreated, word)
 }
 
-// EditWordHandler edit word
-func EditWordHandler(w http.ResponseWriter, r *http.Request) {
+// EditHandler edit word
+func (wd Word) EditHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
@@ -126,8 +129,8 @@ func EditWordHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, word)
 }
 
-// DeleteWordHandler delete word
-func DeleteWordHandler(w http.ResponseWriter, r *http.Request) {
+// DeleteHandler delete word
+func (wd Word) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {

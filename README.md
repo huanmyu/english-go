@@ -58,4 +58,7 @@ VALUES ("slogan","[ˈsloʊgən]","https://tts.hjapi.com/en-us/5DEDBC879A7FDFF4",
 3. 安装和使用[handlers]( "http://www.gorillatoolkit.org/pkg/handlers")
 `go get github.com/gorilla/handlers`
 
+4. 安装和使用[Middleware]("https://github.com/urfave/negroni")
+`go get github.com/urfave/negroni`
+
 [sql语句文档](https://www.w3schools.com/sql/default.asp)

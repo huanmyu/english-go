@@ -10,7 +10,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+type User struct {
+}
+
+// LoginHandler user login
+func (u User) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 
 	decoder := json.NewDecoder(r.Body)
@@ -37,7 +41,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, user)
 }
 
-func IsLoginHandler(w http.ResponseWriter, r *http.Request) {
+// IsLoginHandler user is login
+func (u User) IsLoginHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := oauth(r)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -47,8 +52,8 @@ func IsLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// UserHandler find user by id
-func UserHandler(w http.ResponseWriter, r *http.Request) {
+// ViewHandler find user by id
+func (u User) ViewHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
@@ -65,8 +70,8 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, user)
 }
 
-// CreateUserHandler create user
-func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+// CreateHandler create user
+func (u User) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 
 	decoder := json.NewDecoder(r.Body)
@@ -97,8 +102,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusCreated, user)
 }
 
-// EditUserHandler edit user
-func EditUserHandler(w http.ResponseWriter, r *http.Request) {
+// EditHandler edit user
+func (u User) EditHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
