@@ -15,11 +15,12 @@ func main() {
 	//	methodsCORSOption := handlers.AllowedMethods([]string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"})
 	//  handlers.CORS(originsCORSOption, headersCORSOption, methodsCORSOption)(r),
 	srv := &http.Server{
-		Handler:      router.R,
-		Addr:         "127.0.0.1:8000",
+		Handler:      router.N,
+		Addr:         ":8000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
 	log.Fatal(srv.ListenAndServe())
+	//http.ListenAndServe(":8000", router.N)
 }

@@ -8,5 +8,5 @@ type Home struct {
 
 // ViewHandler show home page
 func (h Home) ViewHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "static/index.html")
+	http.ServeFile(w, r, "public/index.html")
 }

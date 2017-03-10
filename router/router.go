@@ -3,32 +3,36 @@ package router
 import (
 	"github.com/bowenchen6/english-go/controller"
 	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
 )
 
-// R is server router
-var R, s *mux.Router
+// N is server handler router and middlewares
+var N *negroni.Negroni
+var r, s *mux.Router
 
 func init() {
-	R = mux.NewRouter()
-
+	r = mux.NewRouter()
 	homeRouter()
 	chatRouter()
 
-	s = R.PathPrefix("/api").Subrouter().StrictSlash(true)
-
+	s = r.PathPrefix("/api").Subrouter().StrictSlash(true)
 	userRouter()
 	wordRouter()
+
+	// Includes some default(logger, recovery and static) middlewares
+	N = negroni.Classic()
+	N.UseHandler(r)
 }
 
 func homeRouter() {
 	var h controller.Home
-	R.HandleFunc("/", h.ViewHandler)
+	r.HandleFunc("/", h.ViewHandler)
 }
 
 func chatRouter() {
 	var c controller.Chat
-	R.HandleFunc("/chat", c.ViewHandler)
-	R.HandleFunc("/ws", c.ServeHandler)
+	r.HandleFunc("/chat", c.ViewHandler)
+	r.HandleFunc("/ws", c.ServeHandler)
 }
 
 func userRouter() {

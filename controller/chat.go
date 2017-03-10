@@ -12,7 +12,7 @@ type Chat struct {
 
 // ViewHandler show chat page
 func (c Chat) ViewHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "static/chat.html")
+	http.ServeFile(w, r, "public/chat.html")
 }
 
 // ServeHandler serve websocket
