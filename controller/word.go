@@ -10,13 +10,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Word serve word handler
 type Word struct {
 }
 
 // ListHandler find all word by page
-func WordListHandler(w http.ResponseWriter, r *http.Request) {
+func (wd Word) ListHandler(w http.ResponseWriter, r *http.Request) {
 	var word model.Word
-	// use request method
 	err := r.ParseForm()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())

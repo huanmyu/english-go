@@ -7,8 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"git.oschina.net/bwn/english/chat"
-
+	"github.com/bowenchen6/english-go/chat"
 	"github.com/bowenchen6/english-go/model"
 )
 
@@ -22,12 +21,12 @@ func init() {
 const salt = "word@english"
 
 func oauth(r *http.Request) (user model.User, err error) {
-	userId, err := r.Cookie("Token")
+	userID, err := r.Cookie("Token")
 	if err != nil {
 		return
 	}
 
-	user.ID, err = strconv.ParseInt(userId.Value, 10, 64)
+	user.ID, err = strconv.ParseInt(userID.Value, 10, 64)
 	if err != nil {
 		return
 	}

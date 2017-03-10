@@ -10,10 +10,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// User serve user handler
 type User struct {
 }
 
-// LoginHandler user login
+// LoginHandler serve user login
 func (u User) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 
@@ -41,7 +42,7 @@ func (u User) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithIndentJSON(w, http.StatusOK, user)
 }
 
-// IsLoginHandler user is login
+// IsLoginHandler validate user is login
 func (u User) IsLoginHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := oauth(r)
 	if err != nil {
@@ -50,6 +51,45 @@ func (u User) IsLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	respondWithIndentJSON(w, http.StatusOK, user)
 
+}
+
+// ListHandler find all user by page
+func (u User) ListHandler(w http.ResponseWriter, r *http.Request) {
+	var user model.User
+	err := r.ParseForm()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pageNumberValue := r.FormValue("pageNumber")
+	pageSizeValue := r.FormValue("pageSize")
+	if pageNumberValue == "" {
+		pageNumberValue = "1"
+	}
+
+	if pageSizeValue == "" {
+		pageSizeValue = "20"
+	}
+
+	pageNumber, err := strconv.ParseInt(pageNumberValue, 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pageSize, err := strconv.ParseInt(pageSizeValue, 10, 64)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	users, err := user.GetUserList(pageNumber, pageSize)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithIndentJSON(w, http.StatusOK, users)
 }
 
 // ViewHandler find user by id

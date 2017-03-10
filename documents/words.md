@@ -70,3 +70,9 @@ VALUES ("exceed","[ɛkˈsid]","https://tts.hjapi.com/en-us/F8AB631632F45920","v.
 INSERT INTO word (name,phonogram,audio,explanation,example)
 VALUES ("quota","[ˈkwoʊtə]","https://tts.hjapi.com/en-us/80954EFA88AEB08A","n. 配额；定额；最低票数","Note that the user agent might delete the cookie before the expiration date if the user agent's cookie store exceeds its quota or if the user manually deletes the server's cookie.");
 ```
+
+>If you make a typo or accidentally delete an important file, you will see a compilation error, just like when you import a non-existent JavaScript module. 
+
+>The public folder contains the HTML file so you can tweak it, for example, to set the page title. 
+
+>However there is an escape hatch that you can use to add an asset outside of the module system.

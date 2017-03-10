@@ -1,19 +1,12 @@
 package controller
 
-import (
-	"bytes"
-	"log"
-	"net/http"
-	"os"
-)
+import "net/http"
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	file, _ := os.Getwd()
-	log.Println("current path:", file)
-	var buffer bytes.Buffer
-	buffer.WriteString(file)
-	buffer.WriteString("static/home.html")
-	p := buffer.String()
-	//respondWithError(w, 200, os.Args[0])
-	http.ServeFile(w, r, p)
+// Home serve home handler
+type Home struct {
+}
+
+// ViewHandler show home page
+func (h Home) ViewHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/index.html")
 }

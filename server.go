@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/bowenchen6/english-go/router"
 )
 
 func main() {
@@ -13,8 +15,8 @@ func main() {
 	//	methodsCORSOption := handlers.AllowedMethods([]string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"})
 	//  handlers.CORS(originsCORSOption, headersCORSOption, methodsCORSOption)(r),
 	srv := &http.Server{
-		Handler:      r,
-		Addr:         "localhost:8080",
+		Handler:      router.R,
+		Addr:         "127.0.0.1:8000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
