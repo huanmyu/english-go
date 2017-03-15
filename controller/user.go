@@ -50,7 +50,18 @@ func (u User) IsLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respondWithIndentJSON(w, http.StatusOK, user)
+}
 
+// LogoutHandler user logout
+func (u User) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	if cookie, err := r.Cookie("Token"); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	} else {
+		cookie.Expires = time.Now().AddDate(-1, 0, 0)
+		http.SetCookie(w, cookie)
+	}
+	respondWithIndentJSON(w, http.StatusOK, map[string]string{"code": "200", "result": "success"})
 }
 
 // ListHandler find all user by page

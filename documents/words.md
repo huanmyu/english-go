@@ -76,3 +76,5 @@ VALUES ("quota","[ˈkwoʊtə]","https://tts.hjapi.com/en-us/80954EFA88AEB08A","n
 >The public folder contains the HTML file so you can tweak it, for example, to set the page title. 
 
 >However there is an escape hatch that you can use to add an asset outside of the module system.
+
+>A wiki consists of a series of interconnected pages, each of which has a title and a body (the page content).

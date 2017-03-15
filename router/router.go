@@ -15,7 +15,7 @@ func init() {
 	homeRouter()
 	chatRouter()
 
-	s = r.PathPrefix("/api").Subrouter().StrictSlash(true)
+	s = r.PathPrefix("/api/").Subrouter().StrictSlash(true)
 	userRouter()
 	wordRouter()
 
@@ -39,6 +39,7 @@ func userRouter() {
 	var u controller.User
 	s.HandleFunc("/login", u.LoginHandler).Methods("POST")
 	s.HandleFunc("/isLogin", u.IsLoginHandler).Methods("GET")
+	s.HandleFunc("/logout", u.LogoutHandler).Methods("GET")
 	s.HandleFunc("/users", u.ListHandler).Methods("GET")
 	s.HandleFunc("/user", u.CreateHandler).Methods("POST")
 	s.HandleFunc("/user/{id:[0-9]+}", u.ViewHandler).Methods("GET")

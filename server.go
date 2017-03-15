@@ -22,5 +22,4 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
-	//http.ListenAndServe(":8000", router.N)
 }
