@@ -1,4 +1,4 @@
-#english
+# English
 ========
 >[Mysql数据库相关](https://dev.mysql.com/doc/refman/5.7/en/charset-applications.html)
 
@@ -55,10 +55,16 @@ VALUES ("slogan","[ˈsloʊgən]","https://tts.hjapi.com/en-us/5DEDBC879A7FDFF4",
 2. 安装和使用[websocket](https://godoc.org/github.com/gorilla/websocket)
 `go get github.com/gorilla/websocket`
 
-3. 安装和使用[handlers]( "http://www.gorillatoolkit.org/pkg/handlers")
+3. 安装和使用[handlers](http://www.gorillatoolkit.org/pkg/handlers)
 `go get github.com/gorilla/handlers`
 
-4. 安装和使用[Middleware]("https://github.com/urfave/negroni")
+4. 安装和使用[Middleware](https://github.com/urfave/negroni)
 `go get github.com/urfave/negroni`
 
+>Redis 相关
+1. 安装和使用[redigo redis](https://github.com/garyburd/redigo)
+`go get github.com/garyburd/redigo/redis`
+
+## Doc
+========
 [sql语句文档](https://www.w3schools.com/sql/default.asp)
