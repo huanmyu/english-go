@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -16,6 +18,59 @@ type Word struct {
 	Example     string    `json:"example"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// GetLatestCreatedWords find latest words
+func (w *Word) GetLatestCreatedWords(userID string) (words []Word, err error) {
+	var userKey string
+	var word Word
+	userKey, err = createString("user:", userID, ":words")
+	if err != nil {
+		return
+	}
+
+	latestWordIDs, err := r.Do("LRANGE", userKey, 0, 10)
+	if err != nil {
+		return
+	}
+
+	ids := latestWordIDs.([]interface{})
+	var wordIds []interface{}
+	for i := range ids {
+		var wordId int64
+		id := ids[i].([]byte)
+		wordId, err = byteSliceToInt64(id)
+		if err != nil {
+			return
+		}
+		wordIds = append(wordIds, wordId)
+	}
+
+	var createdAt, updatedAt mysql.NullTime
+	rows, err := db.Query("SELECT * FROM word where id in (?"+strings.Repeat(",?", len(wordIds)-1)+")", wordIds...)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(&word.ID, &word.Name, &word.Phonogram, &word.Audio, &word.Explanation, &word.Example, &createdAt, &updatedAt); err != nil {
+			return
+		}
+
+		if createdAt.Valid {
+			word.CreatedAt = createdAt.Time
+		}
+
+		if updatedAt.Valid {
+			word.UpdatedAt = updatedAt.Time
+		}
+
+		words = append(words, word)
+	}
+
+	err = rows.Err()
+	return
 }
 
 // GetWordList find page word
@@ -118,6 +173,25 @@ func (w *Word) CreateWord() (lastInsertID int64, err error) {
 
 	_, err = res.RowsAffected()
 	return
+}
+
+func (w *Word) CacheLatestCreatedWords(userID string, wordID string) (err error) {
+	var userKey string
+	userKey, err = createString("user:", userID, ":words")
+	if err != nil {
+		return
+	}
+
+	n, err := r.Do("LPUSH", userKey, wordID)
+	if err != nil {
+		return
+	}
+
+	if n.(int64) < 0 {
+		err = errors.New("add element failed")
+		return
+	}
+	return nil
 }
 
 // UpdateWord update word

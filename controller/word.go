@@ -14,6 +14,26 @@ import (
 type Word struct {
 }
 
+// LatestListHandler show latest created words list
+func (wd Word) LatestListHandler(w http.ResponseWriter, r *http.Request) {
+	var word model.Word
+	var userID string
+
+	if cookie, err := r.Cookie("Token"); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	} else {
+		userID = cookie.Value
+	}
+
+	words, err := word.GetLatestCreatedWords(userID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithIndentJSON(w, http.StatusOK, words)
+}
+
 // ListHandler find all word by page
 func (wd Word) ListHandler(w http.ResponseWriter, r *http.Request) {
 	var word model.Word
@@ -74,6 +94,14 @@ func (wd Word) ViewHandler(w http.ResponseWriter, r *http.Request) {
 // CreateHandler create word
 func (wd Word) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	var word model.Word
+	var userID string
+
+	if cookie, err := r.Cookie("Token"); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	} else {
+		userID = cookie.Value
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&word); err != nil {
@@ -85,6 +113,14 @@ func (wd Word) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	word.CreatedAt = time.Now()
 	word.UpdatedAt = time.Now()
 	lastInsertID, err := word.CreateWord()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// cache latest created word for user
+	wordID := strconv.FormatInt(lastInsertID, 10)
+	err = word.CacheLatestCreatedWords(userID, wordID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return

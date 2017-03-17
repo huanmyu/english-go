@@ -44,7 +44,7 @@ VALUES ("slogan","[ˈsloʊgən]","https://tts.hjapi.com/en-us/5DEDBC879A7FDFF4",
 5. 安装和使用[Go Mysql Driver](http://go-database-sql.org/index.html)
 `go get github.com/go-sql-driver/mysql`
 
-6. TODO use sqlx 
+6. TODO use sqlx
 `go get github.com/jmoiron/sqlx`
 
 >Http FrameWork相关  
@@ -62,6 +62,7 @@ VALUES ("slogan","[ˈsloʊgən]","https://tts.hjapi.com/en-us/5DEDBC879A7FDFF4",
 `go get github.com/urfave/negroni`
 
 >Redis 相关
+
 1. 安装和使用[redigo redis](https://github.com/garyburd/redigo)
 `go get github.com/garyburd/redigo/redis`
 

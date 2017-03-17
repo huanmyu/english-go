@@ -48,7 +48,7 @@ func userRouter() {
 
 func wordRouter() {
 	var w controller.Word
-	s.HandleFunc("/words", w.ListHandler).Methods("GET")
+	s.HandleFunc("/words", w.LatestListHandler).Methods("GET")
 	s.HandleFunc("/word/{id:[0-9]+}", w.ViewHandler).Methods("GET")
 	s.HandleFunc("/word", w.CreateHandler).Methods("POST")
 	s.HandleFunc("/word/{id:[0-9]+}", w.EditHandler).Methods("PUT")
