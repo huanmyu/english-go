@@ -14,8 +14,8 @@ import (
 
 const timeLayout = "2006-01-02 15:04:05"
 
-var db *sql.DB
-var r redis.Conn
+var DB *sql.DB
+var R redis.Conn
 
 func init() {
 	connectDB()
@@ -24,13 +24,13 @@ func init() {
 
 func connectDB() {
 	var err error
-	db, err = sql.Open("mysql", "root:qwenil123@tcp(127.0.0.1:3306)/english?timeout=90s&collation=utf8mb4_unicode_ci")
+	DB, err = sql.Open("mysql", "root:qwenil123@tcp(127.0.0.1:3306)/english?timeout=90s&collation=utf8mb4_unicode_ci")
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.SetMaxIdleConns(2000)
-	db.SetMaxOpenConns(1000)
-	err = db.Ping()
+	DB.SetMaxIdleConns(2000)
+	DB.SetMaxOpenConns(1000)
+	err = DB.Ping()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func connectRedis(db int) {
 	writeTime := time.Duration(1000 * 1000 * 1000)
 	writeTimeoutOption := redis.DialWriteTimeout(writeTime)
 	dbOption := redis.DialDatabase(db)
-	r, err = redis.Dial("tcp", ":6379", connectTimeoutOption, readTimeoutOption, writeTimeoutOption, dbOption)
+	R, err = redis.Dial("tcp", ":6379", connectTimeoutOption, readTimeoutOption, writeTimeoutOption, dbOption)
 	if err != nil {
 		log.Fatal(err)
 	}

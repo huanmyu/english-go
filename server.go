@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bowenchen6/english-go/model"
 	"github.com/bowenchen6/english-go/router"
 )
 
 func main() {
+	defer model.R.Close()
+	defer model.DB.Close()
 	//	headersCORSOption := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 	//	originsCORSOption := handlers.AllowedOrigins([]string{"*"})
 	//	methodsCORSOption := handlers.AllowedMethods([]string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"})

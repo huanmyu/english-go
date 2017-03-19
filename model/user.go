@@ -20,7 +20,7 @@ type User struct {
 func (u *User) GetUserList(pageNumber, pageSize int64) (users []User, err error) {
 	var total, offset int64
 	var user User
-	err = db.QueryRow("SELECT count(*) as total FROM user").Scan(&total)
+	err = DB.QueryRow("SELECT count(*) as total FROM user").Scan(&total)
 	if err != nil {
 		return
 	}
@@ -41,7 +41,7 @@ func (u *User) GetUserList(pageNumber, pageSize int64) (users []User, err error)
 	}
 
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT id, name, password, created_at, updated_at FROM user limit ?,?", offset, pageSize)
+	rows, err := DB.Query("SELECT id, name, password, created_at, updated_at FROM user limit ?,?", offset, pageSize)
 	if err != nil {
 		return
 	}
@@ -70,7 +70,7 @@ func (u *User) GetUserList(pageNumber, pageSize int64) (users []User, err error)
 // GetUserByID find user by ID
 func (u *User) GetUserByID() (err error) {
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT id, name, password, is_remember, created_at, updated_at FROM user WHERE id=?", u.ID)
+	rows, err := DB.Query("SELECT id, name, password, is_remember, created_at, updated_at FROM user WHERE id=?", u.ID)
 	if err != nil {
 		return
 	}
@@ -96,7 +96,7 @@ func (u *User) GetUserByID() (err error) {
 
 // GetUserByNameAndPassword find user by Name and Password
 func (u *User) GetUserByNameAndPassword() (err error) {
-	rows, err := db.Query("SELECT id, is_remember FROM user WHERE name=? AND password=? ", u.Name, u.Password)
+	rows, err := DB.Query("SELECT id, is_remember FROM user WHERE name=? AND password=? ", u.Name, u.Password)
 	if err != nil {
 		return
 	}
@@ -114,7 +114,7 @@ func (u *User) GetUserByNameAndPassword() (err error) {
 
 // CreateUser create user
 func (u *User) CreateUser() (lastInsertID int64, err error) {
-	stmt, err := db.Prepare("INSERT INTO user(name, password, is_remember, created_at, updated_at) VALUES(?,?,?,?,?)")
+	stmt, err := DB.Prepare("INSERT INTO user(name, password, is_remember, created_at, updated_at) VALUES(?,?,?,?,?)")
 	if err != nil {
 		return
 	}
@@ -136,7 +136,7 @@ func (u *User) CreateUser() (lastInsertID int64, err error) {
 
 // UpdateUser update user
 func (u *User) UpdateUser() (err error) {
-	stmt, err := db.Prepare("UPDATE user SET name = ?, password = ?, is_remember = ?, updated_at = ? WHERE id = ?")
+	stmt, err := DB.Prepare("UPDATE user SET name = ?, password = ?, is_remember = ?, updated_at = ? WHERE id = ?")
 	if err != nil {
 		return
 	}
@@ -153,7 +153,7 @@ func (u *User) UpdateUser() (err error) {
 
 // DeleteUser delete user
 func (u *User) DeleteUser() (err error) {
-	stmt, err := db.Prepare("DELETE FROM user where id = ?")
+	stmt, err := DB.Prepare("DELETE FROM user where id = ?")
 	if err != nil {
 		return
 	}

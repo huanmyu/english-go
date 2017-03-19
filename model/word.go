@@ -29,7 +29,7 @@ func (w *Word) GetLatestCreatedWords(userID string) (words []Word, err error) {
 		return
 	}
 
-	latestWordIDs, err := r.Do("LRANGE", userKey, 0, 10)
+	latestWordIDs, err := R.Do("LRANGE", userKey, 0, 10)
 	if err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func (w *Word) GetLatestCreatedWords(userID string) (words []Word, err error) {
 	}
 
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT * FROM word where id in (?"+strings.Repeat(",?", len(wordIds)-1)+")", wordIds...)
+	rows, err := DB.Query("SELECT * FROM word where id in (?"+strings.Repeat(",?", len(wordIds)-1)+")", wordIds...)
 	if err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func (w *Word) GetLatestCreatedWords(userID string) (words []Word, err error) {
 func (w *Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error) {
 	var total, offset int64
 	var word Word
-	err = db.QueryRow("SELECT count(*) as total FROM word").Scan(&total)
+	err = DB.QueryRow("SELECT count(*) as total FROM word").Scan(&total)
 	if err != nil {
 		return
 	}
@@ -98,7 +98,7 @@ func (w *Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error)
 	}
 
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT * FROM word limit ?,?", offset, pageSize)
+	rows, err := DB.Query("SELECT * FROM word limit ?,?", offset, pageSize)
 	if err != nil {
 		return
 	}
@@ -127,7 +127,7 @@ func (w *Word) GetWordList(pageNumber, pageSize int64) (words []Word, err error)
 // GetWordByID find word by ID
 func (w *Word) GetWordByID() error {
 	var createdAt, updatedAt mysql.NullTime
-	rows, err := db.Query("SELECT * FROM word WHERE id=?", w.ID)
+	rows, err := DB.Query("SELECT * FROM word WHERE id=?", w.ID)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (w *Word) GetWordByID() error {
 
 // CreateWord create word
 func (w *Word) CreateWord() (lastInsertID int64, err error) {
-	stmt, err := db.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, created_at, updated_at) VALUES(?,?,?,?,?,?,?)")
+	stmt, err := DB.Prepare("INSERT INTO word(name, phonogram, audio, explanation, example, created_at, updated_at) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
 		return
 	}
@@ -182,7 +182,7 @@ func (w *Word) CacheLatestCreatedWords(userID string, wordID string) (err error)
 		return
 	}
 
-	n, err := r.Do("LPUSH", userKey, wordID)
+	n, err := R.Do("LPUSH", userKey, wordID)
 	if err != nil {
 		return
 	}
@@ -191,12 +191,14 @@ func (w *Word) CacheLatestCreatedWords(userID string, wordID string) (err error)
 		err = errors.New("add element failed")
 		return
 	}
+
+	_, err = R.Do("LTRIM", userKey, 0, 10)
 	return nil
 }
 
 // UpdateWord update word
 func (w *Word) UpdateWord() (err error) {
-	tx, err := db.Begin()
+	tx, err := DB.Begin()
 	if err != nil {
 		return
 	}
@@ -224,7 +226,7 @@ func (w *Word) UpdateWord() (err error) {
 
 // DeleteWord delete word
 func (w *Word) DeleteWord() (err error) {
-	stmt, err := db.Prepare("DELETE FROM word where id = ?")
+	stmt, err := DB.Prepare("DELETE FROM word where id = ?")
 	if err != nil {
 		return
 	}
